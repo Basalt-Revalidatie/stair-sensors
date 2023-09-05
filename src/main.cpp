@@ -7,7 +7,10 @@ Sensor code for the Stair Challenge - @Basalt
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 #include "Adafruit_VL53L1X.h"
+
+// Project includes
 #include "sensor/id.h"
+#include "sensor/wifi.h"
 #include "sensor/status_led.h"
 
 // I2C Pins
@@ -55,10 +58,11 @@ void setup() {
   Serial.begin(115200);
   while(!Serial) delay(10);
 
-  pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
-
   Wire.begin(PIN_SDA, PIN_SCL);
   Serial.println("Starting setup");
+
+  setupWiFi();
+  pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
 
   if (! vl53.begin(0x29, &Wire)) {
     Serial.print(F("Error on init of VL sensor: "));
