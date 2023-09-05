@@ -9,6 +9,8 @@
 
 #include <Arduino.h>
 
+extern bool debug;
+
 /**
  * @brief Convert a binary string to an integer
  * 

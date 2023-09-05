@@ -15,6 +15,8 @@
 #define PIXELPIN  2 // 2 for C3 Mate
 #define NUMPIXELS 1
 
+extern bool debug;
+
 Adafruit_NeoPixel pixels(NUMPIXELS, PIXELPIN, NEO_GRB + NEO_KHZ800);
 
 /**
@@ -39,21 +41,6 @@ void fadeToColor(uint32_t fromColor, uint32_t toColor, int duration) {
 }
 
 /**
- * @brief Rainbow animation
- * 
- * @param delayTime
- */
-void rainbow(int delayTime) {
-  for (int j = 0; j < 255; j++) {
-    for (int i = 0; i < pixels.numPixels(); i++) {
-      pixels.setPixelColor(i, wheel((i + j) & 255));
-    }
-    pixels.show();
-    delay(delayTime);
-  }
-}
-
-/**
  * @brief Rainbow cycle animation
  * 
  * @param WheelPos
@@ -70,4 +57,19 @@ uint32_t wheel(byte WheelPos) {
   }
   WheelPos -= 170;
   return pixels.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+}
+
+/**
+ * @brief Rainbow animation
+ * 
+ * @param delayTime
+ */
+void rainbow(int delayTime) {
+  for (int j = 0; j < 255; j++) {
+    for (int i = 0; i < pixels.numPixels(); i++) {
+      pixels.setPixelColor(i, wheel((i + j) & 255));
+    }
+    pixels.show();
+    delay(delayTime);
+  }
 }
