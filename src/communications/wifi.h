@@ -8,11 +8,14 @@
  */
 
 #include <WiFi.h>
-#include "../secrets/env.h"
+
+// Project includes
+#include "secrets/config.h"
+
+WiFiClient espClient;
 
 /**
  * @brief Setup the WiFi connection
- * 
  */
 void setupWiFi() {
     WiFi.mode(WIFI_STA); //Optional

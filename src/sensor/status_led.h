@@ -8,7 +8,6 @@
  */
 
 #include <Arduino.h>
-
 #include <Adafruit_NeoPixel.h>
 
 // Onboard RGB LED (NeoPixel)
