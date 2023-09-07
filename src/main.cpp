@@ -10,8 +10,11 @@ Sensor code for the Stair Challenge - @Basalt
 
 // Project includes
 #include "sensor/id.h"
-#include "sensor/wifi.h"
 #include "sensor/status_led.h"
+#include "communications/wifi.h"
+#include "communications/mqtt.h"
+#include "communications/mqtt_topics.h"
+#include "secrets/config.h"
 
 // I2C Pins
 #define PIN_SDA   10
@@ -63,6 +66,7 @@ void setup() {
 
   setupWiFi();
   pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
+  setupMQTT();
 
   if (! vl53.begin(0x29, &Wire)) {
     Serial.print(F("Error on init of VL sensor: "));
@@ -128,6 +132,11 @@ int16_t readDistance() {
  * @brief Loop function
  */
 void loop() {
+  if (!client.connected()) {
+    reconnect();
+  }
+  client.loop();
+
   // Set RGB LED to black / off
   pixels.setPixelColor(0, pixels.Color(0, 0, 0));
   pixels.show();
@@ -149,6 +158,11 @@ void loop() {
       Serial.println("Persoon op de traptreden!");
       pixels.setPixelColor(0, pixels.Color(0, 25, 0));
       pixels.show();
+
+      // Publish MQTT message
+      String message = "Person on the stairs!";
+      client.publish(generateTopic("trigger").c_str(), message.c_str());
+
       delay(5000);
     }
 
