@@ -12,6 +12,7 @@ Sensor code for the Stair Challenge - @Basalt
 #include "sensor/id.h"
 #include "sensor/status_led.h"
 #include "communications/wifi.h"
+#include "communications/ota.h"
 #include "communications/mqtt.h"
 #include "communications/mqtt_topics.h"
 #include "secrets/config.h"
@@ -64,7 +65,15 @@ void setup() {
   Wire.begin(PIN_SDA, PIN_SCL);
   Serial.println("Starting setup");
 
+  // Set sensor ID
+  sensorID = setSensorID();
+  Serial.print(F("Sensor ID: "));
+  Serial.println(sensorID);
+
+  // Setup the wifi and OTA
   setupWiFi();
+  setupOTA();
+
   pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
   setupMQTT();
 
@@ -76,7 +85,7 @@ void setup() {
   }
   Serial.println(F("VL53L1X sensor OK!"));
 
-  Serial.print(F("Sensor ID: 0x"));
+  Serial.print(F("TOF Sensor ID: 0x"));
   Serial.println(vl53.sensorID(), HEX);
 
   if (! vl53.startRanging()) {
@@ -86,11 +95,6 @@ void setup() {
     while(1) delay(10);
   }
   Serial.println(F("Ranging started"));
-
-  // Set sensor ID
-  sensorID = setSensorID();
-  Serial.print(F("Sensor ID: "));
-  Serial.println(sensorID);
 
   // Valid timing budgets: 15, 20, 33, 50, 100, 200 and 500ms!
   vl53.setTimingBudget(50);
