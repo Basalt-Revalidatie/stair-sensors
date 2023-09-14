@@ -102,7 +102,7 @@ void setup() {
   Serial.println(F("Ranging started"));
 
   // Valid timing budgets: 15, 20, 33, 50, 100, 200 and 500ms!
-  vl53.setTimingBudget(50);
+  vl53.setTimingBudget(20);
   Serial.print(F("Timing budget (ms): "));
   Serial.println(vl53.getTimingBudget());
 
@@ -173,6 +173,7 @@ void loop() {
 
       // Publish MQTT message
       trigger(distance, distanceMax, threshold);
+      delay(4000);
     }
 
     // Print the distance
@@ -182,5 +183,5 @@ void loop() {
       Serial.println(" mm");
     }
   }
-  delay(100);
+  delay(50);
 }
