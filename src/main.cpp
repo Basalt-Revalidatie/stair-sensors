@@ -14,7 +14,6 @@ Sensor code for the Stair Challenge - @Basalt
 #include "communications/wifi.h"
 #include "communications/ota.h"
 #include "communications/mqtt.h"
-#include "communications/mqtt_topics.h"
 #include "secrets/config.h"
 
 // I2C Pins
@@ -164,10 +163,7 @@ void loop() {
       pixels.show();
 
       // Publish MQTT message
-      String message = "Person on the stairs!";
-      client.publish(generateTopic("trigger").c_str(), message.c_str());
-
-      delay(5000);
+      trigger(distance, distanceMax, threshold);
     }
 
     // Print the distance
