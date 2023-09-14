@@ -35,6 +35,11 @@ const int16_t maxDistanceBufferInmm = 50;
 void startCalibration() {
   // calculate the max distance, subtract a buffer and set threshold.
   distanceMax = vl53.distance() - maxDistanceBufferInmm;
+
+  // Set the threshold to half the max distance
+  if (distanceMax >= 1300) {
+    distanceMax = 1300;
+  }
   threshold = distanceMax / 2;
 
   Serial.print(F("Max distance (mm): "));
@@ -69,11 +74,12 @@ void setup() {
   Serial.print(F("Sensor ID: "));
   Serial.println(sensorID);
 
-  // Setup the wifi and OTA
+  pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
+  rainbow(20); // Rainbow animation
+
+  // Setup the wifi, OTA and MQTT
   setupWiFi();
   setupOTA();
-
-  pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
   setupMQTT();
 
   if (! vl53.begin(0x29, &Wire)) {
@@ -96,7 +102,7 @@ void setup() {
   Serial.println(F("Ranging started"));
 
   // Valid timing budgets: 15, 20, 33, 50, 100, 200 and 500ms!
-  vl53.setTimingBudget(50);
+  vl53.setTimingBudget(20);
   Serial.print(F("Timing budget (ms): "));
   Serial.println(vl53.getTimingBudget());
 
@@ -167,6 +173,7 @@ void loop() {
 
       // Publish MQTT message
       trigger(distance, distanceMax, threshold);
+      delay(4000);
     }
 
     // Print the distance
@@ -176,5 +183,5 @@ void loop() {
       Serial.println(" mm");
     }
   }
-  delay(100);
+  delay(50);
 }
