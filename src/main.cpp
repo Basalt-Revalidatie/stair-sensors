@@ -35,6 +35,11 @@ const int16_t maxDistanceBufferInmm = 50;
 void startCalibration() {
   // calculate the max distance, subtract a buffer and set threshold.
   distanceMax = vl53.distance() - maxDistanceBufferInmm;
+
+  // Set the threshold to half the max distance
+  if (distanceMax >= 1300) {
+    distanceMax = 1300;
+  }
   threshold = distanceMax / 2;
 
   Serial.print(F("Max distance (mm): "));
