@@ -74,11 +74,12 @@ void setup() {
   Serial.print(F("Sensor ID: "));
   Serial.println(sensorID);
 
-  // Setup the wifi and OTA
+  pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
+  rainbow(20); // Rainbow animation
+
+  // Setup the wifi, OTA and MQTT
   setupWiFi();
   setupOTA();
-
-  pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
   setupMQTT();
 
   if (! vl53.begin(0x29, &Wire)) {
