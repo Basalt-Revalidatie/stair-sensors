@@ -12,7 +12,7 @@ Sensor code for the Stair Challenge - @Basalt
 #include "sensor/id.h"
 #include "sensor/status_led.h"
 #include "communications/wifi.h"
-#include "communications/ota.h"
+#include "communications/webserver.h"
 #include "communications/mqtt.h"
 #include "secrets/config.h"
 
@@ -102,6 +102,9 @@ void setup() {
 
   // Calibrate the sensor
   startCalibration();
+
+  // Setup the webserver
+  setupWebserver();
 
   /*
   vl.VL53L1X_SetDistanceThreshold(100, 300, 3, 1);
