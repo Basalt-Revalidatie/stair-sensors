@@ -180,7 +180,7 @@ void loop() {
 
       // Publish MQTT message
       trigger(distance, distanceMax, threshold);
-      delay(4000);
+      delay(3000);
     }
 
     // Print the distance
