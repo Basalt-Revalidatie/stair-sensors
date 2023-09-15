@@ -116,6 +116,13 @@ void setup() {
   vl.VL53L1X_SetDistanceThreshold(100, 300, 3, 1);
   vl.VL53L1X_SetInterruptPolarity(0);
   */
+
+  // Succesful boot animation 
+  for (int i = 0; i < 2; i++) {
+    // Fade to green
+    fadeToColor(0x00FF00, 0x000000, 500);
+    fadeToColor(0x000000, 0x00FF00, 500);
+  }
 }
 
 /**
