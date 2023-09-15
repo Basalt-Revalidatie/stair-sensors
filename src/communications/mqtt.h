@@ -41,6 +41,9 @@ void callback(char *topic, byte *payload, unsigned int length) {
   Serial.println();
 }
 
+/**
+ * @brief Reconnect to the MQTT broker
+ */
 void reconnect() {
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
@@ -56,11 +59,23 @@ void reconnect() {
       Serial.print("failed, rc=");
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
+
+      // Fade to purple
+      fadeToColor(0x800080, 0x000000, 1000);
+      fadeToColor(0x000000, 0x800080, 1000);
+
       delay(5000);
     }
   }
 }
 
+/**
+ * @brief Publish a trigger message to the MQTT broker
+ * 
+ * @param distance  Distance in mm
+ * @param max_distance  Maximum distance in mm
+ * @param threshold  Threshold in mm
+ */
 void trigger(int distance, int max_distance, int threshold) {
   // Create a JSON object and populate it
   StaticJsonDocument<200> jsonDoc;
