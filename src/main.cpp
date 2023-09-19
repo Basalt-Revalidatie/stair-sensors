@@ -23,6 +23,8 @@ Sensor code for the Stair Challenge - @Basalt
 Adafruit_VL53L1X vl53 = Adafruit_VL53L1X();
 
 bool IsCalibrated = false;
+bool showError = false;
+bool showOnline = false;
 bool debug = false;
 
 int16_t sensorID;
@@ -156,6 +158,12 @@ void loop() {
   }
   client.loop();
 
+  // Send status info to MQTT
+  if (!showOnline) {
+    sendStatus(sensorID, IP_Address, distanceMax, threshold, "online");
+    showOnline = true;
+  }
+
   // Set RGB LED to black / off
   pixels.setPixelColor(0, pixels.Color(0, 0, 0));
   pixels.show();
@@ -168,19 +176,28 @@ void loop() {
     Serial.print(F("Couldn't get distance: "));
     Serial.println(vl53.vl_status);
 
+    if (!showError) {
+      sendStatus(sensorID, IP_Address, distanceMax, threshold, "error");
+      showError = true;
+    }
+
     // Fade to red
     fadeToColor(0xFF0000, 0x000000, 1000);
     fadeToColor(0x000000, 0xFF0000, 1000);
     return;
   } else if(distance != 0 && distance != -1) {
+    // Reset error
+    showError = false;
     if (distance <= threshold && IsCalibrated) {
       Serial.println("Persoon op de traptreden!");
       pixels.setPixelColor(0, pixels.Color(0, 25, 0));
       pixels.show();
 
       // Publish MQTT message
-      trigger(distance, distanceMax, threshold);
+      sendTrigger(sensorID, distance);
+      sendStatus(sensorID, IP_Address, distanceMax, threshold, "trigger");
       delay(3000);
+      sendStatus(sensorID, IP_Address, distanceMax, threshold, "measure");
     }
 
     // Print the distance

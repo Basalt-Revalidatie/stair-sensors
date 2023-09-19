@@ -13,6 +13,7 @@
 #include "secrets/config.h"
 
 extern int16_t sensorID;
+String IP_Address;
 
 WiFiClient espClient;
 
@@ -46,6 +47,8 @@ void setupWiFi() {
         Serial.print(".");
         delay(100);
     }
+
+    IP_Address = WiFi.localIP().toString();
 
     // Show connection details
     Serial.println("\nConnected to the WiFi network");
