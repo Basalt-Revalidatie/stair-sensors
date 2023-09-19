@@ -27,10 +27,6 @@ void setupOTA() {
   Serial.println("HTTP server started");
 }
 
-void handleReset() {
-  ESP.restart();
-}
-
 void setupWebserver() {
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     String htmlContent = "<html><head><style>"
@@ -38,14 +34,14 @@ void setupWebserver() {
                     "h1 { text-align: center; color: #333; }"
                     ".container { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; }"
                     "form { margin-top: 20px; }"
-                    ".reset-button { padding: 10px 20px; background-color: #AF4C4C; color: white; border: none; cursor: pointer; font-size: 16px; }"
+                    ".restart-button { padding: 10px 20px; background-color: #AF4C4C; color: white; border: none; cursor: pointer; font-size: 16px; }"
                     ".firmware-button { padding: 10px 20px; background-color: #1E90FF; color: white; border: none; cursor: pointer; font-size: 16px; }"
                     "</style></head><body><div class=\"container\">"
                     "<h1>Stair Sensor</h1>"
                     "<p>Sensor ID: " + String(sensorID) + "</p>"
                     "<p>Max Distance: " + String(distanceMax) + "</p>"
-                    "<form action=\"/reset\" method=\"post\">"
-                    "<button type=\"submit\" class=\"reset-button\">Reset</button>"
+                    "<form action=\"/restart\" method=\"post\">"
+                    "<button type=\"submit\" class=\"restart-button\">Restart</button>"
                     "</form>"
                     "<form action=\"/update\">"
                     "<button type=\"submit\" class=\"firmware-button\">Update Firmware</button>"
@@ -54,7 +50,7 @@ void setupWebserver() {
     request->send(200, "text/html", htmlContent);
   });
 
-  server.on("/reset", HTTP_POST, [](AsyncWebServerRequest *request){
-    handleReset();
+  server.on("/restart", HTTP_POST, [](AsyncWebServerRequest *request){
+    ESP.restart();
   });
 }
