@@ -24,7 +24,7 @@ Adafruit_VL53L1X vl53 = Adafruit_VL53L1X();
 
 bool IsCalibrated = false;
 bool showError = false;
-bool showOnline = false;
+bool showMeasure = false;
 bool debug = false;
 
 int16_t sensorID;
@@ -171,6 +171,12 @@ void loop() {
   int16_t distance;
   distance = readDistance();
 
+  // Send status info to MQTT
+  if (!showMeasure) {
+    sendStatus(sensorID, IP_Address, distanceMax, threshold, "measure");
+    showMeasure = true;
+  }
+
   if (distance == -1) {
     // something went wrong!
     Serial.print(F("Couldn't get distance: "));
@@ -197,7 +203,7 @@ void loop() {
       sendTrigger(sensorID, distance);
       sendStatus(sensorID, IP_Address, distanceMax, threshold, "trigger");
       delay(3000);
-      sendStatus(sensorID, IP_Address, distanceMax, threshold, "measure");
+      showMeasure = false;
     }
 
     // Print the distance
