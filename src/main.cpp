@@ -158,12 +158,6 @@ void loop() {
   }
   client.loop();
 
-  // Send status info to MQTT
-  if (!showOnline) {
-    sendStatus(sensorID, IP_Address, distanceMax, threshold, "online");
-    showOnline = true;
-  }
-
   // Set RGB LED to black / off
   pixels.setPixelColor(0, pixels.Color(0, 0, 0));
   pixels.show();
