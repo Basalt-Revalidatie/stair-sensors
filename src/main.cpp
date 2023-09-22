@@ -30,6 +30,7 @@ bool debug = false;
 int16_t sensorID;
 int16_t distanceMax, threshold;
 const int16_t maxDistanceBufferInmm = 50;
+const int16_t addDistance = 100;
 
 /**
  * @brief Calibrate the sensor
@@ -42,7 +43,7 @@ void startCalibration() {
   if (distanceMax >= 1300) {
     distanceMax = 1300;
   }
-  threshold = distanceMax / 2;
+  threshold = (distanceMax / 2) + addDistance;
 
   Serial.print(F("Max distance (mm): "));
   Serial.print(distanceMax);
