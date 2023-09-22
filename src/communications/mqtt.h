@@ -1,10 +1,10 @@
 /**
  * @file mqtt.h
  * @author Klaas Schoute - Basalt
- * @brief 
- * 
+ * @brief
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 
 #include <PubSubClient.h>
@@ -13,56 +13,37 @@
 
 extern int16_t sensorID;
 extern int16_t distanceMax, threshold;
+extern bool workoutMode, showIdle, showMeasure, showError;
 
 extern WiFiClient espClient;
 PubSubClient client(espClient);
 
-/**
- * @brief Generate a topic for the sensor
- * 
- * @param type 
- * @return String 
- */
-String generateTopic(String type) {
-  return "sensor/" + String(sensorID) + "/" + String(type) ;
-}
-
 // MQTT topics
 const char *restartAllTopic = "sensor/restart_all";
+const char *workoutControlAllTopic = "workout/control_all";
 
 /**
- * @brief Callback function for MQTT messages
- * 
- * @param topic  Topic
- * @param payload  Payload
- * @param length  Length of the payload
+ * @brief Generate a topic for the sensor
+ *
+ * @param type
+ * @return String
  */
-void callback(char *topic, byte *payload, unsigned int length) {
-  Serial.println("Bericht ontvangen op topic: " + String(topic));
-
-  if (strcmp(topic, "sensor/restart_all") == 0) {
-    ESP.restart();
-  } else {
-    String restartTopic = "sensor/";
-    restartTopic += sensorID;
-    restartTopic += "/restart";
-
-    if (strcmp(topic, restartTopic.c_str()) == 0) {
-      ESP.restart();
-    }
-  }
+String generateTopic(String type)
+{
+  return "sensor/" + String(sensorID) + "/" + String(type);
 }
 
 /**
  * @brief Publish a status message to the MQTT broker
- * 
+ *
  * @param client_id  Client ID
  * @param ip_address  IP address
  * @param max_distance  Maximum distance in mm
  * @param threshold  Threshold in mm
- * @param status  Sensor status 
+ * @param status  Sensor status
  */
-void sendStatus(int16_t client_id, String ip_address, int max_distance, int threshold, String status) {
+void sendStatus(int16_t client_id, String ip_address, int max_distance, int threshold, String status)
+{
   // Create a JSON object and populate it
   StaticJsonDocument<200> jsonDoc;
 
@@ -79,17 +60,68 @@ void sendStatus(int16_t client_id, String ip_address, int max_distance, int thre
 }
 
 /**
+ * @brief Callback function for MQTT messages
+ *
+ * @param topic  Topic
+ * @param payload  Payload
+ * @param length  Length of the payload
+ */
+void callback(char *topic, byte *payload, unsigned int length)
+{
+  Serial.println("Bericht ontvangen op topic: " + String(topic));
+
+  if (strcmp(topic, restartAllTopic) == 0)
+  {
+    ESP.restart();
+  }
+  else if (strcmp(topic, workoutControlAllTopic) == 0)
+  {
+    // Convert the payload to a string
+    String controlMessage = "";
+    for (int i = 0; i < length; i++)
+    {
+      controlMessage += (char)payload[i];
+    }
+
+    // Check if the controlMessage is "start" or "stop"
+    if (controlMessage == "start")
+    {
+      showError = false;
+      showMeasure = false;
+      workoutMode = true;
+    }
+    else if (controlMessage == "stop")
+    {
+      showIdle = false;
+      workoutMode = false;
+    }
+  }
+  else
+  {
+    String restartTopic = "sensor/";
+    restartTopic += sensorID;
+    restartTopic += "/restart";
+
+    if (strcmp(topic, restartTopic.c_str()) == 0)
+    {
+      ESP.restart();
+    }
+  }
+}
+
+/**
  * @brief Create a JSON string with the status of the sensor
- * 
+ *
  * @param client_id  Client ID
  * @param ip_address  IP address
  * @param max_distance  Maximum distance in mm
  * @param threshold  Threshold in mm
  * @param status  Sensor status
- * 
+ *
  * @return String
  */
-String statusJson(int16_t client_id, String ip_address, int max_distance, int threshold, String status) {
+String statusJson(int16_t client_id, String ip_address, int max_distance, int threshold, String status)
+{
   // JSON-buffer maken met voldoende capaciteit
   StaticJsonDocument<200> jsonBuffer;
 
@@ -114,20 +146,25 @@ String statusJson(int16_t client_id, String ip_address, int max_distance, int th
 /**
  * @brief Reconnect to the MQTT broker
  */
-void reconnect() {
-  while (!client.connected()) {
+void reconnect()
+{
+  while (!client.connected())
+  {
     Serial.print("Attempting MQTT connection...");
 
     String clientId = "Sensor-";
     clientId += sensorID;
 
-    if (client.connect(clientId.c_str(), generateTopic("status").c_str(), 0, true, statusJson(sensorID, IP_Address, distanceMax, threshold, "offline").c_str())) {
+    if (client.connect(clientId.c_str(), generateTopic("status").c_str(), 0, true, statusJson(sensorID, IP_Address, distanceMax, threshold, "offline").c_str()))
+    {
       Serial.println("connected");
       sendStatus(sensorID, IP_Address, distanceMax, threshold, "online");
       client.subscribe(restartAllTopic);
+      client.subscribe(workoutControlAllTopic);
       client.subscribe(generateTopic("restart").c_str());
     }
-    else {
+    else
+    {
       Serial.print("failed, rc=");
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
@@ -143,11 +180,12 @@ void reconnect() {
 
 /**
  * @brief Publish a trigger message to the MQTT broker
- * 
+ *
  * @param client_id  Client ID
  * @param distance  Distance in mm
  */
-void sendTrigger(int16_t client_id, int distance) {
+void sendTrigger(int16_t client_id, int distance)
+{
   // Create a JSON object and populate it
   StaticJsonDocument<200> jsonDoc;
 
@@ -160,7 +198,11 @@ void sendTrigger(int16_t client_id, int distance) {
   client.publish(generateTopic("trigger").c_str(), jsonBuffer);
 }
 
-void setupMQTT() {
+/**
+ * @brief Setup MQTT
+ */
+void setupMQTT()
+{
   client.setServer(mqttBroker, mqttPort);
   client.setCallback(callback);
 }
