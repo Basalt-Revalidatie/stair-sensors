@@ -11,15 +11,11 @@
 #include <WiFiClient.h>
 #include <ArduinoJson.h>
 
-extern const char *subscribeTopic;
 extern int16_t sensorID;
 extern int16_t distanceMax, threshold;
 
 extern WiFiClient espClient;
 PubSubClient client(espClient);
-
-// MQTT topics
-const char *subscribeTopic = "settings";
 
 /**
  * @brief Generate a topic for the sensor
@@ -31,15 +27,30 @@ String generateTopic(String type) {
   return "sensor/" + String(sensorID) + "/" + String(type) ;
 }
 
+// MQTT topics
+const char *restartAllTopic = "sensor/restart_all";
+
+/**
+ * @brief Callback function for MQTT messages
+ * 
+ * @param topic  Topic
+ * @param payload  Payload
+ * @param length  Length of the payload
+ */
 void callback(char *topic, byte *payload, unsigned int length) {
-  Serial.print("Message arrived [");
-  Serial.print(topic);
-  Serial.print("] ");
-  String message;
-  for (int i = 0; i < length; i++) {
-    Serial.print(message += (char)payload[i]);
+  Serial.println("Bericht ontvangen op topic: " + String(topic));
+
+  if (strcmp(topic, "sensor/restart_all") == 0) {
+    ESP.restart();
+  } else {
+    String restartTopic = "sensor/";
+    restartTopic += sensorID;
+    restartTopic += "/restart";
+
+    if (strcmp(topic, restartTopic.c_str()) == 0) {
+      ESP.restart();
+    }
   }
-  Serial.println();
 }
 
 /**
@@ -112,7 +123,9 @@ void reconnect() {
 
     if (client.connect(clientId.c_str(), generateTopic("status").c_str(), 0, true, statusJson(sensorID, IP_Address, distanceMax, threshold, "offline").c_str())) {
       Serial.println("connected");
-      client.subscribe(subscribeTopic);
+      sendStatus(sensorID, IP_Address, distanceMax, threshold, "online");
+      client.subscribe(restartAllTopic);
+      client.subscribe(generateTopic("restart").c_str());
     }
     else {
       Serial.print("failed, rc=");

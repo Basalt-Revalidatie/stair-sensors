@@ -24,12 +24,13 @@ Adafruit_VL53L1X vl53 = Adafruit_VL53L1X();
 
 bool IsCalibrated = false;
 bool showError = false;
-bool showOnline = false;
+bool showMeasure = false;
 bool debug = false;
 
 int16_t sensorID;
 int16_t distanceMax, threshold;
 const int16_t maxDistanceBufferInmm = 50;
+const int16_t addDistance = 100;
 
 /**
  * @brief Calibrate the sensor
@@ -42,7 +43,7 @@ void startCalibration() {
   if (distanceMax >= 1300) {
     distanceMax = 1300;
   }
-  threshold = distanceMax / 2;
+  threshold = (distanceMax / 2) + addDistance;
 
   Serial.print(F("Max distance (mm): "));
   Serial.print(distanceMax);
@@ -158,18 +159,18 @@ void loop() {
   }
   client.loop();
 
-  // Send status info to MQTT
-  if (!showOnline) {
-    sendStatus(sensorID, IP_Address, distanceMax, threshold, "online");
-    showOnline = true;
-  }
-
   // Set RGB LED to black / off
   pixels.setPixelColor(0, pixels.Color(0, 0, 0));
   pixels.show();
 
   int16_t distance;
   distance = readDistance();
+
+  // Send status info to MQTT
+  if (!showMeasure) {
+    sendStatus(sensorID, IP_Address, distanceMax, threshold, "measure");
+    showMeasure = true;
+  }
 
   if (distance == -1) {
     // something went wrong!
@@ -197,7 +198,7 @@ void loop() {
       sendTrigger(sensorID, distance);
       sendStatus(sensorID, IP_Address, distanceMax, threshold, "trigger");
       delay(3000);
-      sendStatus(sensorID, IP_Address, distanceMax, threshold, "measure");
+      showMeasure = false;
     }
 
     // Print the distance
