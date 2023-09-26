@@ -35,7 +35,7 @@ bool debug = false;
 int16_t sensorID;
 int16_t distanceMax, threshold;
 const int16_t maxDistanceBufferInmm = 50;
-const int16_t addDistance = 100;
+const int16_t addDistance = 50;
 
 /**
  * @brief Calibrate the sensor
