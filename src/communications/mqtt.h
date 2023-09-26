@@ -26,11 +26,12 @@ const char *workoutControlAllTopic = "workout/control_all";
  * @brief Generate a topic for the sensor
  *
  * @param type
+ * @param endpoint
  * @return String
  */
-String generateTopic(String type)
+String generateTopic(String type, String endpoint)
 {
-  return "sensor/" + String(sensorID) + "/" + String(type);
+  return String(type) + "/" + String(sensorID) + "/" + String(endpoint);
 }
 
 /**
@@ -56,7 +57,7 @@ void sendStatus(int16_t client_id, String ip_address, int max_distance, int thre
   // Serialize JSON object to a string buffer
   char jsonBuffer[200];
   serializeJson(jsonDoc, jsonBuffer);
-  client.publish(generateTopic("status").c_str(), jsonBuffer);
+  client.publish(generateTopic("sensor", "status").c_str(), jsonBuffer);
 }
 
 /**
@@ -74,7 +75,7 @@ void callback(char *topic, byte *payload, unsigned int length)
   {
     ESP.restart();
   }
-  else if (strcmp(topic, workoutControlAllTopic) == 0)
+  else if (strcmp(topic, workoutControlAllTopic) == 0 || strcmp(topic, generateTopic("workout", "control").c_str()) == 0)
   {
     // Convert the payload to a string
     String controlMessage = "";
@@ -155,13 +156,14 @@ void reconnect()
     String clientId = "Sensor-";
     clientId += sensorID;
 
-    if (client.connect(clientId.c_str(), generateTopic("status").c_str(), 0, true, statusJson(sensorID, IP_Address, distanceMax, threshold, "offline").c_str()))
+    if (client.connect(clientId.c_str(), generateTopic("sensor", "status").c_str(), 0, true, statusJson(sensorID, IP_Address, distanceMax, threshold, "offline").c_str()))
     {
       Serial.println("connected");
       sendStatus(sensorID, IP_Address, distanceMax, threshold, "online");
       client.subscribe(restartAllTopic);
       client.subscribe(workoutControlAllTopic);
-      client.subscribe(generateTopic("restart").c_str());
+      client.subscribe(generateTopic("sensor", "restart").c_str());
+      client.subscribe(generateTopic("workout", "control").c_str());
     }
     else
     {
@@ -195,7 +197,7 @@ void sendTrigger(int16_t client_id, int distance)
   // Serialize JSON object to a string buffer
   char jsonBuffer[200];
   serializeJson(jsonDoc, jsonBuffer);
-  client.publish(generateTopic("trigger").c_str(), jsonBuffer);
+  client.publish(generateTopic("sensor", "trigger").c_str(), jsonBuffer);
 }
 
 /**
