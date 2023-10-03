@@ -228,7 +228,7 @@ void loop()
 
         // Publish MQTT message
         sendTrigger(sensorID, distance);
-        sendStatus(sensorID, IP_Address, distanceMax, threshold, "trigger");
+        sendStatus(sensorID, IP_Address, distanceMax, threshold, "trigger", distance);
         delay(3000);
         showMeasure = false;
       }
