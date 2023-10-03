@@ -42,8 +42,9 @@ String generateTopic(String type, String endpoint)
  * @param max_distance  Maximum distance in mm
  * @param threshold  Threshold in mm
  * @param status  Sensor status
+ * @param distance  Distance in mm
  */
-void sendStatus(int16_t client_id, String ip_address, int max_distance, int threshold, String status)
+void sendStatus(int16_t client_id, String ip_address, int max_distance, int threshold, String status, int distance = 0)
 {
   // Create a JSON object and populate it
   StaticJsonDocument<200> jsonDoc;
@@ -53,6 +54,11 @@ void sendStatus(int16_t client_id, String ip_address, int max_distance, int thre
   jsonDoc["max_distance"] = max_distance;
   jsonDoc["threshold"] = threshold;
   jsonDoc["status"] = status;
+
+  if (distance != 0)
+  {
+    jsonDoc["distance"] = distance;
+  }
 
   // Serialize JSON object to a string buffer
   char jsonBuffer[200];
